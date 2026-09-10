@@ -1,16 +1,32 @@
 # --- Web UI ---
-streamlit
+streamlit==1.63.0
 
-# --- LangChain Core & Framework ---
-langchain
-langchain-community
-langchain-core
-langchain-groq
+# --- LangChain core + agent framework ---
+# NOTE: as of LangChain 1.0, create_sql_query_chain moved out of the core
+# `langchain` package into the separate `langchain-classic` package.
+# Both are required -- omitting langchain-classic causes an ImportError.
+langchain==1.4.0
+langchain-core==1.6.2
+langchain-classic==1.0.8
+langchain-community==0.4.2
+langchain-text-splitters==1.1.2
 
-# --- Web Search (Free, No API Key) ---
-duckduckgo-search
+# --- Free LLM backend (Groq) ---
+langchain-groq==1.1.3
 
-# --- Data Handling & Utilities ---
-pandas
-python-dotenv
-sqlalchemy
+# --- Web search (free, no API key) ---
+# NOTE: langchain_community's DuckDuckGoSearchRun depends on the `ddgs`
+# package (the old `duckduckgo-search` package was renamed/superseded).
+# Both are listed for compatibility, but `ddgs` is the one actually
+# required at runtime.
+duckduckgo-search==9.16.0
+ddgs==9.16.0
+
+# --- Data handling ---
+pandas==3.0.2
+
+# --- Env var management ---
+python-dotenv==1.0.1
+
+# --- SQL toolkit ---
+sqlalchemy==2.0.52

@@ -91,12 +91,25 @@ def get_llm() -> BaseChatModel:
 
     # --- Fallback: local Ollama (fully free, fully offline) ---
     print(
-        "[info] GROQ_API_KEY not found -- falling back to local Ollama. "
-        "Make sure Ollama is running (https://ollama.com) and you've "
-        "pulled a model, e.g. `ollama pull llama3.1`. "
+        "[info] GROQ_API_KEY not found -- attempting local Ollama fallback. "
         "Note: this fallback will NOT work on Streamlit Cloud."
     )
-    from langchain_ollama import ChatOllama
+    try:
+        from langchain_ollama import ChatOllama
+    except ImportError as exc:
+        raise RuntimeError(
+            "No usable LLM backend found. GROQ_API_KEY is not set in the "
+            "environment, and the optional local-Ollama fallback package "
+            "(langchain-ollama) is not installed.\n\n"
+            "If you are running on Streamlit Cloud: go to your app's "
+            "Settings -> Secrets and add:\n"
+            '    GROQ_API_KEY = "your_groq_api_key_here"\n'
+            "then reboot the app (saving secrets alone does not always "
+            "restart the running process).\n\n"
+            "If you are running locally: make sure a `.env` file exists in "
+            "the project root containing GROQ_API_KEY=your_key, or install "
+            "`langchain-ollama` and run a local Ollama server instead."
+        ) from exc
 
     model_name = os.getenv("OLLAMA_MODEL", "llama3.1")
     return ChatOllama(model=model_name, temperature=0)
