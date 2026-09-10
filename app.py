@@ -23,13 +23,43 @@ import streamlit as st
 from dotenv import load_dotenv
 
 # --------------------------------------------------------------------------
-# Env loading -- must happen before importing agent/tools, since they read
-# GROQ_API_KEY etc. from the environment at import time.
+# Env loading -- must happen before importing agent/tools/db_setup, since
+# they read GROQ_API_KEY etc. from the environment at import time.
 # --------------------------------------------------------------------------
 load_dotenv()
 
 from db_setup import build_all_databases, DATASET_CONFIG
-from agent import query_agent_with_trace
+
+# --------------------------------------------------------------------------
+# Build the SQLite databases BEFORE importing agent/tools.
+#
+# tools.py constructs its 3 SQL tools at *import time* (module-level code),
+# and each one requires its .db file to already exist on disk. On a fresh
+# deploy (e.g. Streamlit Cloud), the databases/ folder doesn't exist yet
+# (it's git-ignored, since it's meant to be generated, not committed) --
+# so this build step must run before `from agent import ...` below, or
+# that import raises FileNotFoundError before the app ever gets a chance
+# to build the databases itself.
+#
+# This intentionally runs before st.set_page_config(), since it's plain
+# Python with no Streamlit calls -- st.set_page_config() must still be
+# the *first* Streamlit command, which it is, just below.
+# --------------------------------------------------------------------------
+db_init_error = None
+try:
+    build_all_databases(force_rebuild=False)
+    databases_ready = True
+except Exception as exc:  # noqa: BLE001
+    databases_ready = False
+    db_init_error = str(exc)
+
+# Only import agent/tools (which build the SQL tools) if the databases
+# were built successfully -- otherwise skip straight to showing the error
+# banner further down, instead of crashing with a second, confusing error.
+if databases_ready:
+    from agent import query_agent_with_trace
+else:
+    query_agent_with_trace = None
 
 
 # ==========================================================================
@@ -187,29 +217,6 @@ st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 # ==========================================================================
 # Dynamic DB initialization (runs once per session, cached across reruns)
 # ==========================================================================
-@st.cache_resource(show_spinner=False)
-def initialize_databases() -> bool:
-    """
-    Ensure all 3 SQLite databases exist before any query runs.
-
-    Cached with st.cache_resource so this only actually runs once per
-    server process, not on every Streamlit rerun (which happens on every
-    user interaction).
-    """
-    build_all_databases(force_rebuild=False)
-    return True
-
-
-db_init_error = None
-try:
-    with st.spinner("Setting up medical databases..."):
-        initialize_databases()
-    databases_ready = True
-except Exception as exc:  # noqa: BLE001
-    databases_ready = False
-    db_init_error = str(exc)
-
-
 # ==========================================================================
 # Session state setup
 # ==========================================================================
