@@ -1,0 +1,31 @@
+# --- Web UI ---
+streamlit==1.63.0
+
+# --- LangChain core + agent framework ---
+langchain==1.4.0
+langchain-core==1.6.2
+langchain-classic==1.0.8
+langchain-community==0.4.2
+langchain-text-splitters==1.1.2
+
+# --- Free LLM backend (Groq) ---
+langchain-groq==1.1.3
+
+# --- Optional local LLM fallback (Ollama) ---
+# Uncomment if you want the local-Ollama fallback path in tools.py to work.
+# Not required for Streamlit Cloud deployment (Groq is used there instead).
+# langchain-ollama==0.3.0
+
+# --- Web search (free, no API key) ---
+duckduckgo-search==9.16.0
+ddgs==9.16.0
+
+# --- Data handling ---
+pandas==3.0.2
+
+# --- Env var management ---
+python-dotenv==1.0.1
+
+# --- SQL toolkit (installed as a langchain-community dependency, pinned
+#     explicitly for a reproducible build) ---
+sqlalchemy==2.0.52
