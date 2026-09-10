@@ -16,10 +16,8 @@ langchain-groq==1.1.3
 
 # --- Web search (free, no API key) ---
 # NOTE: langchain_community's DuckDuckGoSearchRun depends on the `ddgs`
-# package (the old `duckduckgo-search` package was renamed/superseded).
-# Both are listed for compatibility, but `ddgs` is the one actually
-# required at runtime.
-duckduckgo-search==9.16.0
+# package (the old `duckduckgo-search` package was renamed/superseded and
+# is no longer needed here).
 ddgs==9.16.0
 
 # --- Data handling ---
